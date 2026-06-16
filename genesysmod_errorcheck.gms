@@ -41,6 +41,12 @@ if(sum((f,r,rr),error_TradeCostsMissingFromTradeRoute(r,f,rr)),
    abort$(errorcheck_level = 2) "TradeCosts are missing from a defined TradeRoute. Please check your TradeCosts to include all defined TradeRoutes.";
 );
 
+$ifThen %switch_vertical_integration% == 1
+parameter error_TradeCostsMissingFromExogenousTradeRoute(r_full,f,exr_full);
+error_TradeCostsMissingFromExogenousTradeRoute(r,f,exr)$(ExogenousTradeRoute(r,exr,f) and TagCanFuelBeTraded(f) and not sum(y,ExogenousTradeCosts(y,f,r,exr))) = 1;
+if(sum((f,r,exr),error_TradeCostsMissingFromExogenousTradeRoute(r,f,exr)),abort "TradeCosts are missing from a defined ExogenousTradeRoute. Please check your EgogenousTradeCosts to include all defined ExogenousTradeRoutes. Missing ExogenousTradeCosts are listed in the parameter error_TradeCostsMissingFromExogenousTradeRoute.");
+$endIf
+
 * Check for errors in ModalSplit definitions
 parameter error_ModalSplitByModalTypeDefinition(f,*,r_full,y_full);
 error_ModalSplitByModalTypeDefinition(f,'Error in ModalGroup',r,y)$(round(sum(mt$(TagModalTypeToModalGroups(mt,'TransportModes')),ModalSplitByFuelAndModalType(r,f,mt,y)),4)>1) = 1;
@@ -142,6 +148,13 @@ if(sum(s,error_StorageLinkOrphan(s,'ChargeableNotDischargeable')+error_StorageLi
    abort$(errorcheck_level = 2) "Inconsistent storage charge or discharge links, or a missing OperationalLifeStorage. Please check Par_TechnologyToStorage and Par_TechnologyFromStorage.";
 );
 
+$ifThen %switch_vertical_integration% == 1
+parameter error_ExogenousTradeCapacityMismatch(*,r_full,f,y_full,exr_full);
+error_ExogenousTradeCapacityMismatch('ExogenousTradeCapacity',r,f,y,exr)$(ResidualExogenousTradeCapacity(r,exr,f,y) and not ExogenousTradeRoute(r,exr,f))  = 1;
+error_ExogenousTradeCapacityMismatch('CommissionedExogenousTradeCapacity',r,f,y,exr)$(CommissionedExogenousTradeCapacity(r,exr,f,y) and not ExogenousTradeRoute(r,exr,f))  = 1;
+if(sum((r,f,y,exr),error_ExogenousTradeCapacityMismatch('ExogenousTradeCapacity',r,f,y,exr)+error_ExogenousTradeCapacityMismatch('CommissionedExogenousTradeCapacity',r,f,y,exr)),abort "ExogenousTradeRoute missing for trade connections with ResidualExogenousTradeCapacity. Check ExogenousTradeRoute & ResidualExogenousTradeCapacity data in Excel. Technologies with missing values are listed in parameter error_ExogenousTradeCapacityMismatch.");
+$endIf
+
 * Check for negative values in physically nonnegative parameters
 set NonNegativeParameter / CapitalCost, FixedCost, VariableCost, SpecifiedAnnualDemand, ResidualCapacity, TotalAnnualMaxCapacity, TotalAnnualMinCapacity, AnnualMinNewCapacity, AnnualMaxNewCapacity, CapacityFactor, AvailabilityFactor, OperationalLife, CapitalCostStorage, ResidualStorageCapacity, CapacityToActivityUnit /;
 parameter error_NegativeValues(NonNegativeParameter);
@@ -164,6 +177,12 @@ if(sum(NonNegativeParameter,error_NegativeValues(NonNegativeParameter)),
    display error_NegativeValues;
    abort$(errorcheck_level = 2) "Negative entries found in physically nonnegative parameters.";
 );
+
+* Check for missing entries in AvailabilityFactor -> if yes, then exit
+parameter error_AvailabilityFactorMissing(r_full,t,y_full);
+error_AvailabilityFactorMissing(r,t,y)$(ResidualCapacity(r,t,y) and not AvailabilityFactor(r,t,y)) = 1;
+display error_AvailabilityFactorMissing;
+if(sum((r,t,y),error_AvailabilityFactorMissing(r,t,y)),display "WARNING: AvailabilityFactor is missing from a Technology. Please check your AvailabilityFactor data in Excel to account for all technologies. Technologies where values are missing are listed in the parameter error_AvailabilityFactorMissing.");
 
 * Check the base-year residual fleet against the group capacity cone
 parameter error_BaseYearGroupCapacityCone(*,*,*);
