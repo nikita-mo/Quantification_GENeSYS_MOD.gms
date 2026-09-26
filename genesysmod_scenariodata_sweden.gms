@@ -2,10 +2,6 @@ AvailabilityFactor(r,'X_DAC_HT',y) = 0;
 AvailabilityFactor(r,'X_DAC_LT',y) = 0;
 
 
-parameter warning_TotalAnnualMinCapacityTooHigh;
-warning_TotalAnnualMinCapacityTooHigh(r,t,y)$(TotalAnnualMaxCapacity(r,t,y)<TotalAnnualMinCapacity(r,t,'2025')) = 1;
-
-TotalAnnualMaxCapacity(r,t,y)$(TotalAnnualMaxCapacity(r,t,y)<TotalAnnualMinCapacity(r,t,'2025')) = TotalAnnualMinCapacity(r,t,'2025');
 
 * Limit capacity expansion in 2025 to only actually (historically) installed capacities
 NewCapacity.up('2025',t,r)$(TagTechnologyToSubsets(t,'PowerSupply') and not TotalAnnualMinCapacity(r,t,'2025') and not AnnualMinNewCapacity(r,t,'2025')) = TotalAnnualMinCapacity(r,t,'2025');
