@@ -508,7 +508,6 @@ $onEmbeddedCode Connect:
         type: set
         rowDimension: 1
         columnDimension: 0
-        
       - name: Exogenous_region_full
         range: "Sets!L2"
         type: set
@@ -692,6 +691,16 @@ $onEmbeddedCode Connect:
         rowDimension: 3
         columnDimension: 0
 
+      - name: GroupTotalAnnualMaxCapacity
+        range: "Par_GroupTotalAnnualMaxCapacity!A2"
+        rowDimension: 3
+        columnDimension: 0
+
+      - name: GroupTotalAnnualMinCapacity
+        range: "Par_GroupTotalAnnualMinCapacity!A2"
+        rowDimension: 3
+        columnDimension: 0
+
       - name: NewCapacityExpansionStop
         range: "Par_NewCapacityExpansionStop!A2"
         rowDimension: 2
@@ -802,6 +811,11 @@ $onEmbeddedCode Connect:
         rowDimension: 2
         columnDimension: 0
 
+      - name: TagRegionToSubsets
+        range: "Par_TagRegionToSubsets!A2"
+        rowDimension: 2
+        columnDimension: 0
+
       - name: TagModalTypeToModalGroups
         range: "Par_TagModalTypeToModalGroups!A2"
         rowDimension: 2
@@ -856,7 +870,6 @@ $onEmbeddedCode Connect:
         range: "Par_DistrictHeatSplit!A2"
         rowDimension: 3
         columnDimension: 0
-        
       - name: ExogenousDemand
         range: "Par_ExogenousDemand!A2"
         rowDimension: 4
@@ -898,7 +911,6 @@ $onEmbeddedCode Connect:
     duplicateRecords: "last"
 $offEmbeddedCode
 $exit
-
 
 $label task_time
 $onEmbeddedCode Connect:

@@ -1,3 +1,8 @@
+$ifthen %switch_vertical_integration% == 1
+$setglobal vi_task_suffix _vertical_integration
+$else
+$setglobal vi_task_suffix
+$endif
 * GENeSYS-MOD v4.0 [Global Energy System Model]  ~ August 2025    
 *
 * #############################################################
@@ -45,6 +50,11 @@ se=0
         set=Year                   Rng=Sets!I2                         rdim=1        cdim=0
 
 $offecho
+$ifthen %switch_vertical_integration% == 1
+$onecho >>%tempdir%temp_%data_file%_sets.tmp
+        set=Exogenous_region_full       Rng=Sets!L2                         rdim=1       cdim=0
+$offecho
+$endif
 
 $ifthen %switch_unixPath% == 1
 $if exist gams_connect.inc $call "rm gams_connect.inc"
@@ -52,14 +62,14 @@ $setglobal run_connect 1
 $call "gams genesysmod_gams_connect.gms --task=check_date --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_sets.gdx";
 $if exist gams_connect.inc $include gams_connect.inc
 $ifi %run_connect% == 0 $log "Skipping GAMS Connect: %gdxdir%%data_file%_sets.gdx is up to date."
-$ifi %switch_only_load_gdx% == 0 $ifi %run_connect% == 1 $call "gams genesysmod_gams_connect.gms --task=load_sets --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_sets.gdx";
+$ifi %switch_only_load_gdx% == 0 $ifi %run_connect% == 1 $call "gams genesysmod_gams_connect.gms --task=load_sets%vi_task_suffix% --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_sets.gdx";
 $elseif %switch_dataload_engine% == gamsconnect
 $if exist gams_connect.inc $call "rm gams_connect.inc"
 $setglobal run_connect 1
 $call "gams genesysmod_gams_connect.gms --task=check_date --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_sets.gdx";
 $if exist gams_connect.inc $include gams_connect.inc
 $ifi %run_connect% == 0 $log "Skipping GAMS Connect: %gdxdir%%data_file%_sets.gdx is up to date."
-$ifi %switch_only_load_gdx% == 0 $ifi %run_connect% == 1 $call "gams genesysmod_gams_connect.gms --task=load_sets --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_sets.gdx";
+$ifi %switch_only_load_gdx% == 0 $ifi %run_connect% == 1 $call "gams genesysmod_gams_connect.gms --task=load_sets%vi_task_suffix% --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_sets.gdx";
 $else
 $ifi %switch_only_load_gdx% == 0 $call "gdxxrw %inputdir%%data_file%.xlsx @%tempdir%temp_%data_file%_sets.tmp o=%gdxdir%%data_file%_sets.gdx MaxDupeErrors=99 CheckDate ";
 $endif
@@ -68,6 +78,9 @@ $onUNDF
 $loadm Region_full Technology Storage Fuel
 $loadm Mode_of_operation Emission ModalType
 $loadm Sector Year
+$ifthen %switch_vertical_integration% == 1
+$loadm Exogenous_region_full
+$endif
 $offUNDF
 
 * Step 2: Read parameters from regional file  -> now includes World values
@@ -161,19 +174,30 @@ se=0
         par=DistrictHeatSplit         Rng=Par_DistrictHeatSplit!A2                         rdim=3        cdim=0
 
 $offecho
+$ifthen %switch_vertical_integration% == 1
+$onecho >>%tempdir%temp_%data_file%_par.tmp
+        par=ExogenousDemand                     Rng=Par_ExogenousDemand!A2                     rdim=4      cdim=0
+        par=ExogenousProduction                 Rng=Par_ExogenousProduction!A2                 rdim=4      cdim=0
+        par=ExogenousTradeRoute                 Rng=Par_ExogenousTradeRoute!A2                 rdim=3      cdim=0
+        par=ResidualExogenousTradeCapacity      Rng=Par_ResidualExoTradeCapacity!A2            rdim=4      cdim=0
+        par=CommissionedExogenousTradeCapacity  Rng=Par_CommissionedExoTradeCap!A2             rdim=4      cdim=0
+        par=GrowthRateExogenousTradeCapacity    Rng=Par_GrowthRateExoTradeCapacity!A2          rdim=4      cdim=0
+        par=ExogenousTradeCapacityGrowthCosts   Rng=Par_ExoTradeCapacityGrowthCosts!A2         rdim=3      cdim=0
+$offecho
+$endif
 
 $ifthen %switch_unixPath% == 1
 $setglobal run_connect 1
 $call "gams genesysmod_gams_connect.gms --task=check_date --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_par.gdx";
 $if exist gams_connect.inc $include gams_connect.inc
 $ifi %run_connect% == 0 $log "Skipping GAMS Connect: %gdxdir%%data_file%_par.gdx is up to date."
-$ifi %switch_only_load_gdx%==0 $ifi %run_connect% == 1 $call "gams genesysmod_gams_connect.gms --task=load_params --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_par.gdx";  
+$ifi %switch_only_load_gdx%==0 $ifi %run_connect% == 1 $call "gams genesysmod_gams_connect.gms --task=load_params%vi_task_suffix% --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_par.gdx";  
 $elseif %switch_dataload_engine% == gamsconnect
 $setglobal run_connect 1
 $call "gams genesysmod_gams_connect.gms --task=check_date --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_par.gdx";
 $if exist gams_connect.inc $include gams_connect.inc
 $ifi %run_connect% == 0 $log "Skipping GAMS Connect: %gdxdir%%data_file%_par.gdx is up to date."
-$ifi %switch_only_load_gdx%==0 $ifi %run_connect% == 1 $call "gams genesysmod_gams_connect.gms --task=load_params --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_par.gdx";
+$ifi %switch_only_load_gdx%==0 $ifi %run_connect% == 1 $call "gams genesysmod_gams_connect.gms --task=load_params%vi_task_suffix% --in_file=%inputdir%%data_file%.xlsx --out_file=%gdxdir%%data_file%_par.gdx";
 $else
 $ifi %switch_only_load_gdx%==0 $call "gdxxrw %inputdir%%data_file%.xlsx @%tempdir%temp_%data_file%_par.tmp o=%gdxdir%%data_file%_par.gdx MaxDupeErrors=99 CheckDate ";
 $endif
@@ -187,6 +211,10 @@ $loadm ReserveMarginTagFuel Readin_TradeRoute Readin_TradeCapacity Readin_Growth
 $loadm InputActivityRatio OutputActivityRatio FixedCost CapitalCost VariableCost ResidualCapacity   EmissionsPenaltyTagTechnology
 $loadm AvailabilityFactor CapacityFactor EmissionActivityRatio OperationalLife TotalAnnualMaxCapacity TotalAnnualMinCapacity EmissionContentPerFuel
 $loadm GroupTotalAnnualMaxCapacity GroupTotalAnnualMinCapacity
+$ifthen %switch_vertical_integration% == 1
+$loadm ExogenousDemand ExogenousProduction ExogenousTradeRoute
+$loadm ResidualExogenousTradeCapacity CommissionedExogenousTradeCapacity GrowthRateExogenousTradeCapacity ExogenousTradeCapacityGrowthCosts
+$endif
 $loadm TotalTechnologyAnnualActivityLowerLimit TotalTechnologyAnnualActivityUpperLimit ModelPeriodExogenousEmission
 $loadm Readin_TotalTechnologyModelPeriodActivityUpperLimit REMinProductionTarget ProductionGrowthLimit
 $loadm TechnologyToStorage TechnologyFromStorage StorageLevelStart MinStorageCharge
@@ -381,8 +409,11 @@ $loadm DeclineRate
 $offUNDF
 $endif
 
-
-
-
-
-
+$ifthen %switch_vertical_integration% == 1
+*
+* ####### Exogenous trade (vertical integration) #############
+*
+EXOGENOUS_REGION(EXOGENOUS_REGION_FULL) = yes;
+ExogenousTradeLossBetweenRegions(y,f,r,exr) = TradeLossFactor(f,y)*ExogenousTradeRoute(r,exr,f);
+ExogenousTradeCosts(y,f,r,exr) = TradeCostFactor(f,y)*ExogenousTradeRoute(r,exr,f);
+$endif

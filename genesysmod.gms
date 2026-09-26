@@ -149,11 +149,7 @@ $include genesysmod_dec.gms
 
 $offlisting
 $ifthen %switch_read_data_long% == 1
-$ifthen %switch_vertical_integration% == 1
-$include genesysmod_dataload_long_vertical_integration.gms
-$else
 $include genesysmod_dataload_long.gms
-$endIf
 $else
 $include genesysmod_dataload.gms
 $endif
