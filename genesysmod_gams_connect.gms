@@ -88,7 +88,7 @@ $onEmbeddedCode Connect:
 
 - GDXWriter:
     file: %out_file%
-    symbols: all
+    writeAll: True
 $offEmbeddedCode
 $exit
 
@@ -445,7 +445,7 @@ $onEmbeddedCode Connect:
 
 - GDXWriter:
     file: %out_file%
-    symbols: all
+    writeAll: True
     duplicateRecords: "last"
 $offEmbeddedCode
 $exit
@@ -517,7 +517,7 @@ $onEmbeddedCode Connect:
 
 - GDXWriter:
     file: %out_file%
-    symbols: all
+    writeAll: True
 $offEmbeddedCode
 $exit
 
@@ -894,7 +894,7 @@ $onEmbeddedCode Connect:
 
 - GDXWriter:
     file: %out_file%
-    symbols: all
+    writeAll: True
     duplicateRecords: "last"
 $offEmbeddedCode
 $exit
@@ -992,7 +992,7 @@ $onEmbeddedCode Connect:
 
 - GDXWriter:
     file: %out_file%
-    symbols: all
+    writeAll: True
     duplicateRecords: "last"
 $offEmbeddedCode
 $exit
