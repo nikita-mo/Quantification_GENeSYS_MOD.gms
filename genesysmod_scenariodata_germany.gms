@@ -12,7 +12,7 @@
 **            reserve margin = 0; variable-cost floor and solar-thermal CF fix (both in core genesysmod_bounds.gms)
 ** Switch: --switch_de_policy=0 turns the NECP targets and the WPG rule off (coal/nuclear exits and inertia stay).
 **
-** Technology names updated from the v3.1 scheme (RES_*) to the current scheme (P_*).
+** Names updated from the v3.1 scheme: RES_* -> P_*, Heat_Low_Residential -> Heat_Buildings; CHP exclusion via subset tag.
 
 $if not set switch_de_policy $setglobal switch_de_policy 1
 
@@ -44,8 +44,8 @@ Renovierungsrate(y)$(YearVal(y) > 2020) = 0.035;
 Renovierungsrate(y)$(YearVal(y) > 2030) = 0.045;
 Renovierungsrate(y)$(YearVal(y) > 2040) = 0.065;
 equation BuildingsInertia(REGION_FULL,TECHNOLOGY,YEAR_FULL);
-BuildingsInertia(r,t,y)$(TagTechnologyToSector(t,'Buildings') and YearVal(y) > 2015 and sum((tt)$(TagTechnologyToSubsets(tt,'CHP')),diag(t,tt)) = 0)..
-  ProductionByTechnologyAnnual(y,t,'Heat_Low_Residential',r) =g= (1 - sum(yy$(YearVal(yy) <= YearVal(y)), Renovierungsrate(yy)*YearlyDifferenceMultiplier(yy-1)))*ProductionByTechnologyAnnual('2018',t,'Heat_Low_Residential',r);
+BuildingsInertia(r,t,y)$(TagTechnologyToSector(t,'Buildings') and YearVal(y) > 2015 and not TagTechnologyToSubsets(t,'CHP'))..
+  ProductionByTechnologyAnnual(y,t,'Heat_Buildings',r) =g= (1 - sum(yy$(YearVal(yy) <= YearVal(y)), Renovierungsrate(yy)*YearlyDifferenceMultiplier(yy-1)))*ProductionByTechnologyAnnual('2018',t,'Heat_Buildings',r);
 
 $ifthen %switch_de_policy% == 1
 *
