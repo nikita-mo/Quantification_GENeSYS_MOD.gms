@@ -224,6 +224,7 @@ profile = 2
 
 $if not set cplex_lpmethod      $setglobal cplex_lpmethod 4
 $if not set cplex_solutiontype  $setglobal cplex_solutiontype 2
+$if not set cplex_iis           $setglobal cplex_iis 0
 $onecho > cplex.opt
 threads %threads%
 parallelmode -1
@@ -234,7 +235,7 @@ solutiontype %cplex_solutiontype%
 quality yes
 *barobjrng 1e+075
 tilim 1000000
-iis 0
+iis %cplex_iis%
 $offecho
 
 $onecho > gurobi.opt
