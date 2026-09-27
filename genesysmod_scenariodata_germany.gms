@@ -4,7 +4,7 @@
 **   KEPT     nuclear exit; coal exit (incl. NRW 2030, domestic hard-coal mining 0 after 2020); buildings renovation inertia
 **   ADDED    NECP capacity plans as LOWER limits on the 16-Laender sum (group-minimum mechanism), same values as the
 **            Man0EUvRE project overlay uses for the EU run's DE node (there as equality);
-**            Waermeplanungsgesetz district-heating rule (>= 30 % renewables / unavoidable waste heat from 2030, >= 80 % from 2040)
+**            Waermeplanungsgesetz district-heating rule on the national sum (>= 30 % renewables / unavoidable waste heat from 2030, >= 80 % from 2040)
 **   DROPPED  everything tied to the sea nodes DE_Nord/DE_Baltic and the FEP offshore-region equations (data-side now);
 **            Ch5 offshore max-capacity overrides for NI/SH/MV; Osterpaket/FEP equality equations; H2 import price-target
 **            sensitivity and switch_central_h2; flat H2/gas import equations; power-sector net-zero 2035; 50 % RE heat;
@@ -71,7 +71,8 @@ GroupTotalAnnualMinCapacity('NECP_Offshore','DE_all','2045') = 70;
 
 *
 *##### Waermeplanungsgesetz 2024, par. 29-30: renewable / unavoidable waste-heat share in district heating #####
-* Applied per Land (proxy for "per network"): >= 30 % from 2030, >= 80 % from 2040.
+* The law binds each network operator; the model has no networks. Applied to the NATIONAL sum (decision 2026-09-27:
+* lenient proxy, allows regional heterogeneity): >= 30 % from 2030, >= 80 % from 2040.
 * ASSUMPTION: waste-to-energy CHP counted at 50 % (biogenic share); heat pumps, geothermal, solar thermal, biomass CHP at 100 %.
 *
 parameter WPG_DH_Share(y_full);
@@ -85,7 +86,7 @@ WPG_DH_Weight('HD_Heatpump_ExcessHeat') = 1;
 WPG_DH_Weight('HD_Heatpump_Air') = 1;
 WPG_DH_Weight('CHP_Biomass_Solid') = 1;
 WPG_DH_Weight('CHP_WasteToEnergy') = 0.5;
-equation DE_WPG_DistrictHeatRenewableShare(YEAR_FULL,REGION_FULL);
-DE_WPG_DistrictHeatRenewableShare(y,r)$(WPG_DH_Share(y) and DistrictHeatDemand(r,y))..
-  sum(t, WPG_DH_Weight(t)*ProductionByTechnologyAnnual(y,t,'Heat_District',r)) =g= WPG_DH_Share(y)*sum(t, ProductionByTechnologyAnnual(y,t,'Heat_District',r));
+equation DE_WPG_DistrictHeatRenewableShare(YEAR_FULL);
+DE_WPG_DistrictHeatRenewableShare(y)$(WPG_DH_Share(y))..
+  sum((t,r), WPG_DH_Weight(t)*ProductionByTechnologyAnnual(y,t,'Heat_District',r)) =g= WPG_DH_Share(y)*sum((t,r), ProductionByTechnologyAnnual(y,t,'Heat_District',r));
 $endif
