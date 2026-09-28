@@ -360,19 +360,8 @@ $endif.equ_hydrogen_tradecapacity
 *equation TrPA2b_FlatGasImports(y_full,l_full,r_full);
 *TrPA2b_FlatGasImports(y,l,r)..   RateOfActivity(y,l,'Z_Import_Gas','1',r)  =l= sum(ll,RateOfActivity(y,ll,'Z_Import_Gas','1',r))*YearSplit(l,y)*1.05;
 
-* Global-market import technologies and ETS certificate trade with the outside world.
-* Closed (fixed to zero) in linked runs, where imports come from the exogenous trade of the supermodel;
-* open in standalone runs, as in the European model. The pilot fixed them unconditionally, which leaves a
-* standalone national model without fossil-fuel supply once the domestic resources are exhausted or absent.
-$ifthen.hatch %switch_close_import_hatch% == 1
-RateOfActivity.fx(y,l,'Z_ETS_Buy','1',r) = 0;
-RateOfActivity.fx(y,l,'Z_ETS_Sell','1',r) = 0;
-RateOfActivity.fx(y,l,'Z_Import_Gas','1',r) = 0;
-RateOfActivity.fx(y,l,'Z_Import_H2','1',r) = 0;
-RateOfActivity.fx(y,l,'Z_Import_Hardcoal','1',r) = 0;
-RateOfActivity.fx(y,l,'Z_Import_LNG','1',r) = 0;
-RateOfActivity.fx(y,l,'Z_Import_Oil','1',r) = 0;
-$endif.hatch
+* Global-market imports (Z_Import_*) are not fixed here: standalone runs keep them as in the European model; linked runs
+* bound them by the supermodel's values (ET5, exogenous-trade block). Z_ETS_* is not touched (irrelevant with a European budget).
 
 
 *
@@ -895,6 +884,12 @@ equation ET1b_ForceExogenousImport(YEAR_FULL,TIMESLICE_FULL,FUEL,EXOGENOUS_REGIO
 ET1b_ForceExogenousImport(y,l,f,exr)$(ExogenousProduction(y,l,f,exr) > 0).. sum(r$(ExogenousTradeRoute(r,exr,f)),ExogenousImport(y,l,f,r,exr)) =l= ExogenousProduction(y,l,f,exr);
 ExogenousImport.fx(y,l,f,r,exr)$(not ExogenousTradeRoute(r,exr,f)) = 0;
 ExogenousImport.fx(y,l,f,r,exr)$(ExogenousProduction(y,l,f,exr) = 0) = 0;
+
+* Imports from outside the supermodel (global-market technologies): the linked country may use at most what the supermodel
+* used for it, summed over all model regions per year (which regions may import which fuel is data: AvailabilityFactor of
+* the Z_Import technology per region). Missing value = zero.
+equation ET5_ExogenousImportLimit(YEAR_FULL,TECHNOLOGY);
+ET5_ExogenousImportLimit(y,t)$(TagTechnologyToSubsets(t,'ImportTechnology')).. sum((l,m,r), RateOfActivity(y,l,t,m,r)*YearSplit(l,y)) =l= ExogenousImportLimit(t,y);
 
 * # Trade capacity
 TotalExogenousTradeCapacity.fx(y,f,r,exr)$(not ExogenousTradeRoute(r,exr,f)) = 0;

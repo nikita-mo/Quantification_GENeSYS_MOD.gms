@@ -252,6 +252,7 @@ parameter ExogenousTradeCapacityGrowthCosts(REGION_FULL,EXOGENOUS_REGION_FULL,FU
 parameter ExogenousTradeCosts(YEAR_FULL,FUEL,REGION_FULL,EXOGENOUS_REGION_FULL) Cost for trading fuels without trade capacity to exogenous regions;
 
 parameter ExogenousTradeLossBetweenRegions(y_full,FUEL,REGION_FULL,EXOGENOUS_REGION_FULL);
+parameter ExogenousImportLimit(TECHNOLOGY,YEAR_FULL) Imports from outside the supermodel (global-market technologies) used by the linked country in the supermodel run [PJ];
 $endIf
 
 * #####################

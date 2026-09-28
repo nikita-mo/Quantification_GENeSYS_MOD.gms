@@ -98,8 +98,6 @@ $if not set eployment_data_file          $setglobal employment_data_file Employm
 * ### settings for vertically integrated model run
 
 $if not set switch_vertical_integration  $setglobal switch_vertical_integration 0
-* import hatch: 1 fixes the global-market import technologies (Z_Import_*) and ETS certificate trade to zero; default = linked run
-$if not set switch_close_import_hatch      $setglobal switch_close_import_hatch %switch_vertical_integration%
 
 ****** end of switches / settings *********
 *******************************************

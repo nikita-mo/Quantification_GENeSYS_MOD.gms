@@ -905,6 +905,11 @@ $onEmbeddedCode Connect:
         rowDimension: 3
         columnDimension: 0
 
+      - name: ExogenousImportLimit
+        range: "Par_ExogenousImportLimit!A2"
+        rowDimension: 2
+        columnDimension: 0
+
 - GDXWriter:
     file: %out_file%
     writeAll: True

@@ -15,36 +15,10 @@
 ** Names updated from the v3.1 scheme: RES_* -> P_*, Heat_Low_Residential -> Heat_Buildings; CHP exclusion via subset tag.
 
 $if not set switch_de_policy $setglobal switch_de_policy 1
-* biomass import allowance for STANDALONE runs (default: on when the vertical integration is off, off when it is on)
-$ifthen.bia not set switch_de_biomass_import_allowance
-$ifthen.viflag %switch_vertical_integration% == 1
-$setglobal switch_de_biomass_import_allowance 0
-$else.viflag
-$setglobal switch_de_biomass_import_allowance 1
-$endif.viflag
-$endif.bia
 
-*
-*##### Standalone runs: biomass import allowance (2026-09-28) #####
-*
-* The German biomass potential (709.7 PJ in 2018, national value split over the Laender) is below the biomass use implied
-* by the researched 2018 production (about 750 PJ). In the European model Germany closes the gap with 276.3 PJ of biomass
-* imports (EnVis NECP Essentials, 122-slice run, 2018: CH 112.2, FR 103.5, PL 44.8, AT 14.9, CZ 0.9 PJ). A standalone
-* national model has no biomass import technology, so the EU-run import volume is added to the R_Wood potential of the
-* border Laender of each partner, constant over the horizon (the island reference keeps the 2018 import level).
-* Linked runs receive the biomass as exogenous trade and must run with the allowance off.
-$ifthen.biomass %switch_de_biomass_import_allowance% == 1
-parameter BiomassImportAllowance(r_full) 'EU-run 2018 biomass imports of DE assigned to the border Laender [PJ]' /
-  DE_BW  146.7
-  DE_RP   34.5
-  DE_SL   34.5
-  DE_BY   15.35
-  DE_BB   14.933
-  DE_MV   14.933
-  DE_SN   15.383
-/;
-TotalTechnologyAnnualActivityUpperLimit(r,'R_Wood',y)$(BiomassImportAllowance(r)) = TotalTechnologyAnnualActivityUpperLimit(r,'R_Wood',y) + BiomassImportAllowance(r);
-$endif.biomass
+* Biomass from abroad: global-market technology Z_Import_Biomass (data; eligible Laender via AvailabilityFactor), priced like
+* the other Z_Import fuels and uncapped in standalone runs. In linked runs ET5 holds it at the EU run's value (zero) - the
+* biomass then arrives as exogenous trade.
 
 *
 *##### Nuclear exit #####

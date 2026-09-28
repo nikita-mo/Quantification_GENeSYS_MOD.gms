@@ -183,6 +183,7 @@ $onecho >>%tempdir%temp_%data_file%_par.tmp
         par=CommissionedExogenousTradeCapacity  Rng=Par_CommissionedExoTradeCap!A2             rdim=4      cdim=0
         par=GrowthRateExogenousTradeCapacity    Rng=Par_GrowthRateExoTradeCapacity!A2          rdim=4      cdim=0
         par=ExogenousTradeCapacityGrowthCosts   Rng=Par_ExoTradeCapacityGrowthCosts!A2         rdim=3      cdim=0
+        par=ExogenousImportLimit                Rng=Par_ExogenousImportLimit!A2                rdim=2      cdim=0
 $offecho
 $endif
 
@@ -214,6 +215,7 @@ $loadm GroupTotalAnnualMaxCapacity GroupTotalAnnualMinCapacity
 $ifthen %switch_vertical_integration% == 1
 $loadm ExogenousDemand ExogenousProduction ExogenousTradeRoute
 $loadm ResidualExogenousTradeCapacity CommissionedExogenousTradeCapacity GrowthRateExogenousTradeCapacity ExogenousTradeCapacityGrowthCosts
+$loadm ExogenousImportLimit
 $endif
 $loadm TotalTechnologyAnnualActivityLowerLimit TotalTechnologyAnnualActivityUpperLimit ModelPeriodExogenousEmission
 $loadm Readin_TotalTechnologyModelPeriodActivityUpperLimit REMinProductionTarget ProductionGrowthLimit
