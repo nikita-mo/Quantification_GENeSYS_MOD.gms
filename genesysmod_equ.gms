@@ -360,6 +360,11 @@ $endif.equ_hydrogen_tradecapacity
 *equation TrPA2b_FlatGasImports(y_full,l_full,r_full);
 *TrPA2b_FlatGasImports(y,l,r)..   RateOfActivity(y,l,'Z_Import_Gas','1',r)  =l= sum(ll,RateOfActivity(y,ll,'Z_Import_Gas','1',r))*YearSplit(l,y)*1.05;
 
+* Global-market import technologies and ETS certificate trade with the outside world.
+* Closed (fixed to zero) in linked runs, where imports come from the exogenous trade of the supermodel;
+* open in standalone runs, as in the European model. The pilot fixed them unconditionally, which leaves a
+* standalone national model without fossil-fuel supply once the domestic resources are exhausted or absent.
+$ifthen.hatch %switch_close_import_hatch% == 1
 RateOfActivity.fx(y,l,'Z_ETS_Buy','1',r) = 0;
 RateOfActivity.fx(y,l,'Z_ETS_Sell','1',r) = 0;
 RateOfActivity.fx(y,l,'Z_Import_Gas','1',r) = 0;
@@ -367,6 +372,7 @@ RateOfActivity.fx(y,l,'Z_Import_H2','1',r) = 0;
 RateOfActivity.fx(y,l,'Z_Import_Hardcoal','1',r) = 0;
 RateOfActivity.fx(y,l,'Z_Import_LNG','1',r) = 0;
 RateOfActivity.fx(y,l,'Z_Import_Oil','1',r) = 0;
+$endif.hatch
 
 
 *
