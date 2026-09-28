@@ -62,16 +62,24 @@ TagTechnologyToSubsets(t,'NECP_Onshore')$(TagTechnologyToSubsets(t,'Onshore') an
 TagTechnologyToSubsets(t,'NECP_Offshore')$(TagTechnologyToSubsets(t,'Offshore') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
 option TechGroup < TagTechnologyToSubsets;
 option RegionGroup < TagRegionToSubsets;
+* EEG 2023 par. 4 (PV 215/309/400 GW in 2030/2035/2040; onshore 115/157/160 GW) and WindSeeG par. 1 (offshore 30/40/70 GW in 2030/2035/2045);
+* 2025 values as in the Man0EUvRE overlay. Floors only; after the last legal target year the floor is held (no retirement below the target).
 GroupTotalAnnualMinCapacity('NECP_Solar','DE_all','2025')    = 117.7;
 GroupTotalAnnualMinCapacity('NECP_Solar','DE_all','2030')    = 215;
+GroupTotalAnnualMinCapacity('NECP_Solar','DE_all','2035')    = 309;
 GroupTotalAnnualMinCapacity('NECP_Solar','DE_all','2040')    = 400;
+GroupTotalAnnualMinCapacity('NECP_Solar','DE_all',y)$(YearVal(y) > 2040)    = 400;
 GroupTotalAnnualMinCapacity('NECP_Onshore','DE_all','2025')  = 64;
 GroupTotalAnnualMinCapacity('NECP_Onshore','DE_all','2030')  = 115;
+GroupTotalAnnualMinCapacity('NECP_Onshore','DE_all','2035')  = 157;
 GroupTotalAnnualMinCapacity('NECP_Onshore','DE_all','2040')  = 160;
+GroupTotalAnnualMinCapacity('NECP_Onshore','DE_all',y)$(YearVal(y) > 2040)  = 160;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_all','2025') = 9.215;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_all','2030') = 30;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_all','2035') = 40;
+GroupTotalAnnualMinCapacity('NECP_Offshore','DE_all','2040') = 40;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_all','2045') = 70;
+GroupTotalAnnualMinCapacity('NECP_Offshore','DE_all',y)$(YearVal(y) > 2045) = 70;
 
 *
 *##### Waermeplanungsgesetz 2024, par. 29-30: renewable / unavoidable waste-heat share in district heating #####
