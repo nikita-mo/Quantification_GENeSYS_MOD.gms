@@ -1,34 +1,12 @@
-** GENeSYS-MOD - scenario data Germany (16 federal states) for the vertical-integration study
-**
-** Ported 2026-09-27 from the Ch5 file "genesysmod_scenariodata_de - Kopie.gms" (v3.1 era), decisions of 2026-09-27:
-**   KEPT     nuclear exit; coal exit (incl. NRW 2030, domestic hard-coal mining 0 after 2020); buildings renovation inertia
-**   ADDED    NECP capacity plans as LOWER limits on the 16-Laender sum (group-minimum mechanism), same values as the
-**            Man0EUvRE project overlay uses for the EU run's DE node (there as equality);
-**            Waermeplanungsgesetz district-heating rule on the national sum (>= 30 % renewables / unavoidable waste heat from 2030, >= 80 % from 2040)
-**   DROPPED  everything tied to the sea nodes DE_Nord/DE_Baltic and the FEP offshore-region equations (data-side now);
-**            Ch5 offshore max-capacity overrides for NI/SH/MV; Osterpaket/FEP equality equations; H2 import price-target
-**            sensitivity and switch_central_h2; flat H2/gas import equations; power-sector net-zero 2035; 50 % RE heat;
-**            sectoral non-increase of emissions (E13a); district-heating share equations for 2050;
-**            reserve margin = 0; variable-cost floor and solar-thermal CF fix (both in core genesysmod_bounds.gms)
-** Switch: --switch_de_policy=0 turns the NECP targets and the WPG rule off (coal/nuclear exits and inertia stay).
-**
-** Names updated from the v3.1 scheme: RES_* -> P_*, Heat_Low_Residential -> Heat_Buildings; CHP exclusion via subset tag.
+** Scenario data Germany (16 federal states), vertical-integration study
 
-$if not set switch_de_policy $setglobal switch_de_policy 1
+$if not set switch_de_policy $setglobal switch_de_policy 0
 
-* Biomass from abroad: global-market technology Z_Import_Biomass (data; eligible Laender via AvailabilityFactor), priced like
-* the other Z_Import fuels and uncapped in standalone runs. In linked runs ET5 holds it at the EU run's value (zero) - the
-* biomass then arrives as exogenous trade.
-
-*
 *##### Nuclear exit #####
-*
 TotalTechnologyAnnualActivityUpperLimit(r,'P_Nuclear',y)$(YearVal(y) >= 2025) = 0;
 AvailabilityFactor(r,'P_Nuclear',y)$(YearVal(y) > 2020) = 0;
 
-*
-*##### Coal exit (Kohleverstromungsbeendigungsgesetz: 2038; Rhineland 2030) #####
-*
+*##### Coal exit (Kohleverstromungsbeendigungsgesetz) #####
 AvailabilityFactor(r,'P_Coal_Lignite',y)$(YearVal(y) > 2035) = 0;
 AvailabilityFactor('DE_NRW','P_Coal_Lignite',y)$(YearVal(y) > 2030) = 0;
 AvailabilityFactor(r,'P_Coal_Hardcoal',y)$(YearVal(y) > 2035) = 0;
@@ -39,9 +17,7 @@ AvailabilityFactor(r,'R_Coal_Hardcoal',y)$(YearVal(y) > 2020) = 0;
 ProductionByTechnologyAnnual.fx('2040',t,'Power',r)$(sum(m,InputActivityRatio(r,t,'Hardcoal',m,'2040'))) = 0;
 ProductionByTechnologyAnnual.fx('2040',t,'Power',r)$(sum(m,InputActivityRatio(r,t,'Lignite',m,'2040'))) = 0;
 
-*
-*##### Buildings: renovation inertia (Ch5) #####
-*
+*##### Buildings renovation inertia (Moskalenko et al. 2026, Applied Energy 409, doi:10.1016/j.apenergy.2026.127508) #####
 parameter Renovierungsrate(y_full);
 Renovierungsrate(y) = 0.015;
 Renovierungsrate(y)$(YearVal(y) > 2020) = 0.035;
@@ -52,18 +28,13 @@ BuildingsInertia(r,t,y)$(TagTechnologyToSector(t,'Buildings') and YearVal(y) > 2
   ProductionByTechnologyAnnual(y,t,'Heat_Buildings',r) =g= (1 - sum(yy$(YearVal(yy) <= YearVal(y)), Renovierungsrate(yy)*YearlyDifferenceMultiplier(yy-1)))*ProductionByTechnologyAnnual('2018',t,'Heat_Buildings',r);
 
 $ifthen %switch_de_policy% == 1
-*
-*##### NECP capacity plans as lower limits on the national (16-Laender) sum #####
-* Values = Man0EUvRE project overlay, NECPCapacityPlans('DE',...): power-supply technologies only.
-*
+*##### NECP capacity floors on the national sum (EEG 2023 par. 4, WindSeeG par. 1) #####
 TagRegionToSubsets(r,'DE_all') = 1;
 TagTechnologyToSubsets(t,'NECP_Solar')$(TagTechnologyToSubsets(t,'Solar') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
 TagTechnologyToSubsets(t,'NECP_Onshore')$(TagTechnologyToSubsets(t,'Onshore') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
 TagTechnologyToSubsets(t,'NECP_Offshore')$(TagTechnologyToSubsets(t,'Offshore') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
 option TechGroup < TagTechnologyToSubsets;
 option RegionGroup < TagRegionToSubsets;
-* EEG 2023 par. 4 (PV 215/309/400 GW in 2030/2035/2040; onshore 115/157/160 GW) and WindSeeG par. 1 (offshore 30/40/70 GW in 2030/2035/2045);
-* 2025 values as in the Man0EUvRE overlay. Floors only; after the last legal target year the floor is held (no retirement below the target).
 GroupTotalAnnualMinCapacity('NECP_Solar','DE_all','2025')    = 117.7;
 GroupTotalAnnualMinCapacity('NECP_Solar','DE_all','2030')    = 215;
 GroupTotalAnnualMinCapacity('NECP_Solar','DE_all','2035')    = 309;
@@ -81,12 +52,7 @@ GroupTotalAnnualMinCapacity('NECP_Offshore','DE_all','2040') = 40;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_all','2045') = 70;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_all',y)$(YearVal(y) > 2045) = 70;
 
-*
-*##### Waermeplanungsgesetz 2024, par. 29-30: renewable / unavoidable waste-heat share in district heating #####
-* The law binds each network operator; the model has no networks. Applied to the NATIONAL sum (decision 2026-09-27:
-* lenient proxy, allows regional heterogeneity): >= 30 % from 2030, >= 80 % from 2040.
-* ASSUMPTION: waste-to-energy CHP counted at 50 % (biogenic share); heat pumps, geothermal, solar thermal, biomass CHP at 100 %.
-*
+*##### Waermeplanungsgesetz par. 29-30: renewable and waste-heat share of district heating on the national sum #####
 parameter WPG_DH_Share(y_full);
 WPG_DH_Share(y)$(YearVal(y) >= 2030) = 0.30;
 WPG_DH_Share(y)$(YearVal(y) >= 2040) = 0.80;
@@ -101,4 +67,11 @@ WPG_DH_Weight('CHP_WasteToEnergy') = 0.5;
 equation DE_WPG_DistrictHeatRenewableShare(YEAR_FULL);
 DE_WPG_DistrictHeatRenewableShare(y)$(WPG_DH_Share(y))..
   sum((t,r), WPG_DH_Weight(t)*ProductionByTechnologyAnnual(y,t,'Heat_District',r)) =g= WPG_DH_Share(y)*sum((t,r), ProductionByTechnologyAnnual(y,t,'Heat_District',r));
+
+*##### Klimaschutzgesetz par. 3: national emission limit incl. exogenous emissions (2025: UBA emission data; 2035 interpolated) #####
+AnnualEmissionLimit('CO2','2025') = 649;
+AnnualEmissionLimit('CO2','2030') = 438;
+AnnualEmissionLimit('CO2','2035') = 294;
+AnnualEmissionLimit('CO2','2040') = 150;
+AnnualEmissionLimit('CO2',y)$(YearVal(y) >= 2045) = 0;
 $endif
