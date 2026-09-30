@@ -31,6 +31,11 @@ BuildingsInertia(r,t,y)$(TagTechnologyToSector(t,'Buildings') and YearVal(y) > 2
 GroupTotalAnnualMaxCapacity('BECCS','DE_states',y) = GroupTotalAnnualMaxCapacity('BECCS','DE',y);
 option RegionGroup < TagRegionToSubsets;
 
+*##### CCS only in high-temperature industry and BECCS #####
+AvailabilityFactor(r,t,y)$(TagTechnologyToSubsets(t,'CCS')
+                           and not TagTechnologyToSubsets(t,'BECCS')
+                           and not (sameas(t,'HHI_BF_BOF_CCS') or sameas(t,'HHI_DRI_EAF_CCS'))) = 0;
+
 $ifthen %switch_de_policy% == 1
 *##### NECP capacity floors on the national sum (EEG 2023 par. 4, WindSeeG par. 1) #####
 TagTechnologyToSubsets(t,'NECP_Solar')$(TagTechnologyToSubsets(t,'Solar') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
