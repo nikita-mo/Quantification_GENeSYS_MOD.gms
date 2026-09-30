@@ -28,7 +28,7 @@ BuildingsInertia(r,t,y)$(TagTechnologyToSector(t,'Buildings') and YearVal(y) > 2
   ProductionByTechnologyAnnual(y,t,'Heat_Buildings',r) =g= (1 - sum(yy$(YearVal(yy) <= YearVal(y)), Renovierungsrate(yy)*YearlyDifferenceMultiplier(yy-1)))*ProductionByTechnologyAnnual('2018',t,'Heat_Buildings',r);
 
 *##### German BECCS cap on the 16-Laender sum #####
-GroupTotalAnnualMaxCapacity('BECCS','DE_states',y) = GroupTotalAnnualMaxCapacity('BECCS','DE',y);
+GroupTotalAnnualMaxCapacity('BECCS','DE_states',y)$GroupTotalAnnualMaxCapacity('BECCS','DE',y) = GroupTotalAnnualMaxCapacity('BECCS','DE',y);
 option RegionGroup < TagRegionToSubsets;
 
 *##### CCS only in high-temperature industry and BECCS #####
@@ -42,6 +42,8 @@ TagTechnologyToSubsets(t,'NECP_Solar')$(TagTechnologyToSubsets(t,'Solar') and Ta
 TagTechnologyToSubsets(t,'NECP_Onshore')$(TagTechnologyToSubsets(t,'Onshore') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
 TagTechnologyToSubsets(t,'NECP_Offshore')$(TagTechnologyToSubsets(t,'Offshore') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
 option TechGroup < TagTechnologyToSubsets;
+* new groups: no upper limit, as set for all other groups in genesysmod_bounds.gms
+GroupTotalAnnualMaxCapacity(tg,rg,y)$(not GroupTotalAnnualMaxCapacity(tg,rg,y)) = 999999;
 GroupTotalAnnualMinCapacity('NECP_Solar','DE_states','2025')    = 117.7;
 GroupTotalAnnualMinCapacity('NECP_Solar','DE_states','2030')    = 215;
 GroupTotalAnnualMinCapacity('NECP_Solar','DE_states','2035')    = 309;
