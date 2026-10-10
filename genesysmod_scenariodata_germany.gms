@@ -17,7 +17,7 @@ AvailabilityFactor(r,'R_Coal_Hardcoal',y)$(YearVal(y) > 2020) = 0;
 ProductionByTechnologyAnnual.fx('2040',t,'Power',r)$(sum(m,InputActivityRatio(r,t,'Hardcoal',m,'2040'))) = 0;
 ProductionByTechnologyAnnual.fx('2040',t,'Power',r)$(sum(m,InputActivityRatio(r,t,'Lignite',m,'2040'))) = 0;
 
-*##### Buildings renovation inertia (Moskalenko et al. 2026, Applied Energy 409, doi:10.1016/j.apenergy.2026.127508) #####
+*##### Buildings renovation inertia (assumption based on IWU 2018, Datenerhebung Wohngebaeudebestand 2016) #####
 parameter Renovierungsrate(y_full);
 Renovierungsrate(y) = 0.015;
 Renovierungsrate(y)$(YearVal(y) > 2020) = 0.035;
@@ -27,14 +27,31 @@ equation BuildingsInertia(REGION_FULL,TECHNOLOGY,YEAR_FULL);
 BuildingsInertia(r,t,y)$(TagTechnologyToSector(t,'Buildings') and YearVal(y) > 2015 and not TagTechnologyToSubsets(t,'CHP') and AvailabilityFactor(r,t,y) >= AvailabilityFactor(r,t,'2018'))..
   ProductionByTechnologyAnnual(y,t,'Heat_Buildings',r) =g= (1 - sum(yy$(YearVal(yy) <= YearVal(y)), Renovierungsrate(yy)*YearlyDifferenceMultiplier(yy-1)))*ProductionByTechnologyAnnual('2018',t,'Heat_Buildings',r);
 
-*##### German BECCS cap on the 16-Laender sum #####
-GroupTotalAnnualMaxCapacity('BECCS','DE_states',y)$GroupTotalAnnualMaxCapacity('BECCS','DE',y) = GroupTotalAnnualMaxCapacity('BECCS','DE',y);
+*##### National group caps (BECCS, biomass imports) on the 16-Laender sum #####
+GroupTotalAnnualMaxCapacity(tg,'DE_states',y)$GroupTotalAnnualMaxCapacity(tg,'DE',y) = GroupTotalAnnualMaxCapacity(tg,'DE',y);
 option RegionGroup < TagRegionToSubsets;
 
 *##### CCS only in high-temperature industry and BECCS #####
 AvailabilityFactor(r,t,y)$(TagTechnologyToSubsets(t,'CCS')
                            and not TagTechnologyToSubsets(t,'BECCS')
                            and not (sameas(t,'HHI_BF_BOF_CCS') or sameas(t,'HHI_DRI_EAF_CCS'))) = 0;
+
+*##### Fossil transport and gas-based steel in the phase-out smoothing #####
+TagTechnologyToSubsets('PSNG_Rail_Conv','PhaseOutSet') = 1;
+TagTechnologyToSubsets('FRT_Rail_Conv','PhaseOutSet') = 1;
+TagTechnologyToSubsets('FRT_Ship_Conv','PhaseOutSet') = 1;
+TagTechnologyToSubsets('PSNG_Air_Conv','PhaseOutSet') = 1;
+TagTechnologyToSubsets('HHI_DRI_EAF','PhaseOutSet') = 1;
+
+*##### 2025 as historic year: no power from technologies without production statistics #####
+ProductionByTechnologyAnnual.fx('2025',t,'Power',r)$((TagTechnologyToSubsets(t,'PowerSupply') or TagTechnologyToSubsets(t,'CHP') or sameas(t,'CHP_WasteToEnergy')) and not RegionalBaseYearProduction(r,t,'Power','2025')) = 0;
+
+*##### Emissions per sector and region are not allowed to increase; negative-emission technologies are not counted #####
+parameter DE_NegativeEmission(TECHNOLOGY);
+DE_NegativeEmission(t)$(smin((r,m,e,y), EmissionActivityRatio(r,t,m,e,y)) < 0) = 1;
+equation E13a_SectoralEmissionReduction(y_full,EMISSION,SECTOR,REGION_FULL);
+E13a_SectoralEmissionReduction(y,e,se,r)$(YearVal(y) > %year% and not sum((t,f), RegionalBaseYearProduction(r,t,f,y)))..
+  sum(t$(TagTechnologyToSector(t,se) and not DE_NegativeEmission(t)), AnnualTechnologyEmission(y,t,e,r)) =l= sum(t$(TagTechnologyToSector(t,se) and not DE_NegativeEmission(t)), AnnualTechnologyEmission(y-1,t,e,r));
 
 $ifthen %switch_de_policy% == 1
 *##### NECP capacity floors on the national sum (EEG 2023 par. 4, WindSeeG par. 1) #####
