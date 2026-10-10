@@ -225,7 +225,9 @@ profile = 2
 $if not set cplex_lpmethod      $setglobal cplex_lpmethod 4
 $if not set cplex_solutiontype  $setglobal cplex_solutiontype 2
 $if not set cplex_iis           $setglobal cplex_iis 0
-$onecho > cplex.opt
+$if not set cplex_barepcomp     $setglobal cplex_barepcomp 1e-8
+$if not set cplex_scaind        $setglobal cplex_scaind 0
+$onecho > %gams.optdir%cplex.opt
 threads %threads%
 parallelmode -1
 lpmethod %cplex_lpmethod%
@@ -236,9 +238,11 @@ quality yes
 *barobjrng 1e+075
 tilim 1000000
 iis %cplex_iis%
+barepcomp %cplex_barepcomp%
+scaind %cplex_scaind%
 $offecho
 
-$onecho > gurobi.opt
+$onecho > %gams.optdir%gurobi.opt
 threads %threads%
 method 2
 names yes
@@ -249,7 +253,7 @@ timelimit 1000000
 $offecho
 
 
-$onecho > osigurobi.opt
+$onecho > %gams.optdir%osigurobi.opt
 threads %threads%
 method 2
 names no
