@@ -113,3 +113,6 @@ AnnualEmissionLimit('CO2',y)$(YearVal(y) >= 2045) = 0;
 AnnualEmissionLimit('CO2','2055') = -10;
 AnnualEmissionLimit('CO2','2060') = -20;
 $endif
+
+*##### Go RES without the policy block: German part of the European 1.5 degree carbon budget 2018-2060 (assumption based on the European Go RES run) #####
+$if %emissionPathway%%switch_de_policy% == Green0 ModelPeriodEmissionLimit('CO2') = 6715;
