@@ -58,6 +58,7 @@ $ifthen %switch_de_policy% == 1
 TagTechnologyToSubsets(t,'NECP_Solar')$(TagTechnologyToSubsets(t,'Solar') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
 TagTechnologyToSubsets(t,'NECP_Onshore')$(TagTechnologyToSubsets(t,'Onshore') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
 TagTechnologyToSubsets(t,'NECP_Offshore')$(TagTechnologyToSubsets(t,'Offshore') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
+TagTechnologyToSubsets('X_Electrolysis','NWS_Electrolysis') = 1;
 option TechGroup < TagTechnologyToSubsets;
 * new groups: no upper limit, as set for all other groups in genesysmod_bounds.gms
 GroupTotalAnnualMaxCapacity(tg,rg,y)$(not GroupTotalAnnualMaxCapacity(tg,rg,y)) = 999999;
@@ -78,21 +79,28 @@ GroupTotalAnnualMinCapacity('NECP_Offshore','DE_states','2040') = 40;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_states','2045') = 70;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_states',y)$(YearVal(y) > 2045) = 70;
 
-*##### Waermeplanungsgesetz par. 29-30: renewable and waste-heat share of district heating on the national sum #####
+*##### Nationale Wasserstoffstrategie 2023: 10 GW of electrolysis (electric input) from 2030 on the national sum #####
+GroupTotalAnnualMinCapacity('NWS_Electrolysis','DE_states',y)$(YearVal(y) >= 2030) = 10/InputActivityRatio('DE_BY','X_Electrolysis','Power','1','2030');
+
+*##### Waermeplanungsgesetz par. 29-31: renewable and waste-heat share of district heating on the national sum, fully from 2045 #####
 parameter WPG_DH_Share(y_full);
 WPG_DH_Share(y)$(YearVal(y) >= 2030) = 0.30;
 WPG_DH_Share(y)$(YearVal(y) >= 2040) = 0.80;
+WPG_DH_Share(y)$(YearVal(y) >= 2045) = 1;
 parameter WPG_DH_Weight(t);
-WPG_DH_Weight(t) = 0;
-WPG_DH_Weight('HD_Geothermal') = 1;
-WPG_DH_Weight('HD_Solar_Thermal') = 1;
-WPG_DH_Weight('HD_Heatpump_ExcessHeat') = 1;
-WPG_DH_Weight('HD_Heatpump_Air') = 1;
-WPG_DH_Weight('CHP_Biomass_Solid') = 1;
+WPG_DH_Weight(t)$sum((r,m,y), OutputActivityRatio(r,t,'Heat_District',m,y)) = 1;
+WPG_DH_Weight(t)$sum((r,m,y), InputActivityRatio(r,t,'Gas_Natural',m,y) + InputActivityRatio(r,t,'Hardcoal',m,y) + InputActivityRatio(r,t,'Lignite',m,y) + InputActivityRatio(r,t,'Oil',m,y)) = 0;
 WPG_DH_Weight('CHP_WasteToEnergy') = 0.5;
 equation DE_WPG_DistrictHeatRenewableShare(YEAR_FULL);
 DE_WPG_DistrictHeatRenewableShare(y)$(WPG_DH_Share(y))..
-  sum((t,r), WPG_DH_Weight(t)*ProductionByTechnologyAnnual(y,t,'Heat_District',r)) =g= WPG_DH_Share(y)*sum((t,r), ProductionByTechnologyAnnual(y,t,'Heat_District',r));
+  sum((t,r)$(not TagTechnologyToSubsets(t,'StorageDummies')), WPG_DH_Weight(t)*ProductionByTechnologyAnnual(y,t,'Heat_District',r)) =g= WPG_DH_Share(y)*sum((t,r)$(not TagTechnologyToSubsets(t,'StorageDummies')), ProductionByTechnologyAnnual(y,t,'Heat_District',r));
+
+*##### Gebaeudeenergiegesetz par. 72 (4): no fossil fuels in building heating from 2045 #####
+RateOfActivity.fx(y,l,t,m,r)$(TagTechnologyToSector(t,'Buildings') and not TagTechnologyToSubsets(t,'CHP') and YearVal(y) >= 2045
+                              and (InputActivityRatio(r,t,'Gas_Natural',m,y) or InputActivityRatio(r,t,'Oil',m,y) or InputActivityRatio(r,t,'Hardcoal',m,y) or InputActivityRatio(r,t,'Lignite',m,y))) = 0;
+
+*##### Growth limit of renewable building heat 3.3 % a year (assumption based on Gebaeudeenergiegesetz par. 72 (4)) #####
+ProductionGrowthLimit('Heat_Buildings',y)$(YearVal(y) > 2025 and ProductionGrowthLimit('Heat_Buildings',y) < 0.033) = 0.033;
 
 *##### Klimaschutzgesetz par. 3: national emission limit incl. exogenous emissions (2025: UBA emission data; 2035 interpolated) #####
 AnnualEmissionLimit('CO2','2025') = 649;
@@ -100,4 +108,8 @@ AnnualEmissionLimit('CO2','2030') = 438;
 AnnualEmissionLimit('CO2','2035') = 294;
 AnnualEmissionLimit('CO2','2040') = 150;
 AnnualEmissionLimit('CO2',y)$(YearVal(y) >= 2045) = 0;
+
+*##### Klimaschutzgesetz par. 3 (2): negative emissions after 2050 (assumption based on the law) #####
+AnnualEmissionLimit('CO2','2055') = -10;
+AnnualEmissionLimit('CO2','2060') = -20;
 $endif
