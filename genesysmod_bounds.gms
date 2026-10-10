@@ -228,7 +228,8 @@ $endif
 
 
 
+* demand from the year before and the demand development; without a demand development the demand of the data stays
 loop(y,
-SpecifiedAnnualDemand(r,f,y)$(not sameas(f,'H2') and not sameas(f,'Heat_District') and YearVal(y)>%year%) =
+SpecifiedAnnualDemand(r,f,y)$(not sameas(f,'H2') and not sameas(f,'Heat_District') and YearVal(y)>%year% and (SpecifiedDemandDevelopment(r,f,y) or not SpecifiedAnnualDemand(r,f,y))) =
 SpecifiedAnnualDemand(r,f,y-1)*(1+SpecifiedDemandDevelopment(r,f,y)*YearlyDifferenceMultiplier(y-1))
 );
