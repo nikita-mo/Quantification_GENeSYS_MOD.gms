@@ -59,6 +59,9 @@ DE_SmoothingFossilPhaseOuts(y,DE_Region,DE_PhaseOut,f)$(not DE_national and Year
 ProductionByTechnologyAnnual.fx('2025',t,'Power',DE_Region)$((TagTechnologyToSubsets(t,'PowerSupply') or TagTechnologyToSubsets(t,'CHP') or sameas(t,'CHP_WasteToEnergy')) and not RegionalBaseYearProduction(DE_Region,t,'Power','2025')
                                                              and sum(TECHNOLOGY, RegionalBaseYearProduction(DE_Region,TECHNOLOGY,'Power','2025'))) = 0;
 
+*##### 2025 as historic year: no new hydrogen road vehicles #####
+NewCapacity.fx('2025',t,DE_Region)$(sameas(t,'PSNG_Road_H2') or sameas(t,'FRT_Road_H2')) = 0;
+
 *##### Emissions per sector and region are not allowed to increase; negative-emission technologies are not counted #####
 parameter DE_NegativeEmission(TECHNOLOGY);
 DE_NegativeEmission(t)$(smin((DE_Region,m,e,y), EmissionActivityRatio(DE_Region,t,m,e,y)) < 0) = 1;
