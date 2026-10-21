@@ -72,6 +72,8 @@ TagTechnologyToSubsets(t,'NECP_Solar')$(TagTechnologyToSubsets(t,'Solar') and Ta
 TagTechnologyToSubsets(t,'NECP_Onshore')$(TagTechnologyToSubsets(t,'Onshore') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
 TagTechnologyToSubsets(t,'NECP_Offshore')$(TagTechnologyToSubsets(t,'Offshore') and TagTechnologyToSubsets(t,'PowerSupply')) = 1;
 TagTechnologyToSubsets('X_Electrolysis','NWS_Electrolysis') = 1;
+TagTechnologyToSubsets('D_Battery_Li-Ion','NEP_Battery') = 1;
+TagTechnologyToSubsets('D_Battery_Redox','NEP_Battery') = 1;
 option TechGroup < TagTechnologyToSubsets;
 * new groups: no upper limit, as set for all other groups in genesysmod_bounds.gms
 GroupTotalAnnualMaxCapacity(tg,rg,y)$(not GroupTotalAnnualMaxCapacity(tg,rg,y)) = 999999;
@@ -91,6 +93,11 @@ GroupTotalAnnualMinCapacity('NECP_Offshore','DE_states','2035') = 40;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_states','2040') = 40;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_states','2045') = 70;
 GroupTotalAnnualMinCapacity('NECP_Offshore','DE_states',y)$(YearVal(y) > 2045) = 70;
+
+*##### Large battery storage on the national sum: path of the NEP scenario framework 2025, scenario B (assumption based on the Szenariorahmen 2037/2045; 2025 from the data) #####
+GroupTotalAnnualMinCapacity('NEP_Battery','DE_states','2030') = 29.6;
+GroupTotalAnnualMinCapacity('NEP_Battery','DE_states','2035') = 56.7;
+GroupTotalAnnualMinCapacity('NEP_Battery','DE_states',y)$(YearVal(y) >= 2040) = 67.6;
 
 *##### Nationale Wasserstoffstrategie 2023: 10 GW of electrolysis (electric input) from 2030 on the national sum #####
 GroupTotalAnnualMinCapacity('NWS_Electrolysis','DE_states',y)$(YearVal(y) >= 2030) = 10/smax(DE_Region, InputActivityRatio(DE_Region,'X_Electrolysis','Power','1','2030'));
