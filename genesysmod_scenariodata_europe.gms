@@ -7,14 +7,15 @@ NewCapacity.up('2025',t,r)$(TagTechnologyToSubsets(t,'PowerSupply') and not Annu
 
 * need to check and move to data
 ProductionByTechnologyAnnual.up(y,'CHP_WasteToEnergy','Heat_District',r) = RegionalBaseYearProduction(r,'CHP_WasteToEnergy','Heat_District','2018');
-OutputActivityRatio(r,'CHP_WasteToEnergy',f,'1',y) = 0;
+
+* the power-only mode stays where the data give base-year power production of waste incineration
+OutputActivityRatio(r,'CHP_WasteToEnergy',f,'1',y)$(not sum(yy, RegionalBaseYearProduction(r,'CHP_WasteToEnergy','Power',yy))) = 0;
 
 * need to check and move to data
 ProductionByTechnologyAnnual.up(y,'HD_Heatpump_ExcessHeat','Heat_District',r)$(YearVal(y)>2018) = SpecifiedAnnualDemand(r,'Heat_District',y)*0.08;
 
 * need to check and move to data
 ProductionByTechnologyAnnual.up(y,'HLI_Geothermal','Heat_Low_Industrial',r) = SpecifiedAnnualDemand(r,'Heat_Low_Industrial',y)*0.25;
-
 
 ProductionByTechnologyAnnual.lo('2025','HB_Oil_Boiler','Heat_Buildings',r) = RegionalBaseYearProduction(r,'HB_Oil_Boiler','Heat_Buildings','2018')*0.3;
 CurtailmentCostFactor = 45;
