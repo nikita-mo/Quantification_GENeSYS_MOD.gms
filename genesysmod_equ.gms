@@ -872,16 +872,36 @@ $endIf
 $ifthen %switch_vertical_integration% == 1
 * # Sum of all related trade costs
 equation ET0_SumAllDiscountedExogenousTradeCosts;
-ET0_SumAllDiscountedExogenousTradeCosts.. AllDiscountedExogenousTradeCosts =e= sum((y,r),DiscountedAnnualTotalExogenousTradeCosts(y,r)) + sum((y,f,r,exr), DiscountedNewExogenousTradeCapacityCosts(y,f,r,exr));
+ET0_SumAllDiscountedExogenousTradeCosts.. AllDiscountedExogenousTradeCosts =e= sum((y,r),DiscountedAnnualTotalExogenousTradeCosts(y,r)) + sum((y,f,r,exr), DiscountedNewExogenousTradeCapacityCosts(y,f,r,exr))
++ sum((y,l,f,exr), (ExogenousDemand_TooHigh(y,l,f,exr) + ExogenousDemand_TooLow(y,l,f,exr) + ExogenousProduction_TooHigh(y,l,f,exr) + ExogenousProduction_TooLow(y,l,f,exr))*9999);
 
 * # Trade flow
-* Forcing the model to trade to the exogenous regions, the trade should in total be exactly as the supermodel run
+* Forcing the model to trade to the exogenous regions: the sum over the model regions is at least (export) and at most (import)
+* the flow of the supermodel run, or equal to it with switch_exogenous_trade_equality = 1.
+* The slack variables are fixed to zero unless switch_exogenous_trade_debugging = 1 (penalised deviations, to locate infeasible flows).
 equation ET1a_ForceExogenousExport(YEAR_FULL,TIMESLICE_FULL,FUEL,EXOGENOUS_REGION_FULL);
-ET1a_ForceExogenousExport(y,l,f,exr)$(ExogenousDemand(y,l,f,exr) > 0).. sum(r$(ExogenousTradeRoute(r,exr,f)),ExogenousExport(y,l,f,r,exr)) =g= ExogenousDemand(y,l,f,exr);
+equation ET1b_ForceExogenousImport(YEAR_FULL,TIMESLICE_FULL,FUEL,EXOGENOUS_REGION_FULL);
+$ifthen %switch_exogenous_trade_equality% == 1
+ET1a_ForceExogenousExport(y,l,f,exr)$(ExogenousDemand(y,l,f,exr) > 0).. sum(r$(ExogenousTradeRoute(r,exr,f)),ExogenousExport(y,l,f,r,exr)) =e= ExogenousDemand(y,l,f,exr) - ExogenousDemand_TooHigh(y,l,f,exr) + ExogenousDemand_TooLow(y,l,f,exr);
+ET1b_ForceExogenousImport(y,l,f,exr)$(ExogenousProduction(y,l,f,exr) > 0).. sum(r$(ExogenousTradeRoute(r,exr,f)),ExogenousImport(y,l,f,r,exr)) =e= ExogenousProduction(y,l,f,exr) - ExogenousProduction_TooHigh(y,l,f,exr) + ExogenousProduction_TooLow(y,l,f,exr);
+$else
+ET1a_ForceExogenousExport(y,l,f,exr)$(ExogenousDemand(y,l,f,exr) > 0).. sum(r$(ExogenousTradeRoute(r,exr,f)),ExogenousExport(y,l,f,r,exr)) =g= ExogenousDemand(y,l,f,exr) - ExogenousDemand_TooHigh(y,l,f,exr);
+ET1b_ForceExogenousImport(y,l,f,exr)$(ExogenousProduction(y,l,f,exr) > 0).. sum(r$(ExogenousTradeRoute(r,exr,f)),ExogenousImport(y,l,f,r,exr)) =l= ExogenousProduction(y,l,f,exr) + ExogenousProduction_TooLow(y,l,f,exr);
+ExogenousDemand_TooLow.fx(y,l,f,exr) = 0;
+ExogenousProduction_TooHigh.fx(y,l,f,exr) = 0;
+$endif
+$ifthen %switch_exogenous_trade_debugging% == 0
+ExogenousDemand_TooHigh.fx(y,l,f,exr) = 0;
+ExogenousDemand_TooLow.fx(y,l,f,exr) = 0;
+ExogenousProduction_TooHigh.fx(y,l,f,exr) = 0;
+ExogenousProduction_TooLow.fx(y,l,f,exr) = 0;
+$endif
+ExogenousDemand_TooHigh.fx(y,l,f,exr)$(ExogenousDemand(y,l,f,exr) = 0) = 0;
+ExogenousDemand_TooLow.fx(y,l,f,exr)$(ExogenousDemand(y,l,f,exr) = 0) = 0;
+ExogenousProduction_TooHigh.fx(y,l,f,exr)$(ExogenousProduction(y,l,f,exr) = 0) = 0;
+ExogenousProduction_TooLow.fx(y,l,f,exr)$(ExogenousProduction(y,l,f,exr) = 0) = 0;
 ExogenousExport.fx(y,l,f,r,exr)$(not ExogenousTradeRoute(r,exr,f)) = 0;
 ExogenousExport.fx(y,l,f,r,exr)$(ExogenousDemand(y,l,f,exr) = 0) = 0;
-equation ET1b_ForceExogenousImport(YEAR_FULL,TIMESLICE_FULL,FUEL,EXOGENOUS_REGION_FULL);
-ET1b_ForceExogenousImport(y,l,f,exr)$(ExogenousProduction(y,l,f,exr) > 0).. sum(r$(ExogenousTradeRoute(r,exr,f)),ExogenousImport(y,l,f,r,exr)) =l= ExogenousProduction(y,l,f,exr);
 ExogenousImport.fx(y,l,f,r,exr)$(not ExogenousTradeRoute(r,exr,f)) = 0;
 ExogenousImport.fx(y,l,f,r,exr)$(ExogenousProduction(y,l,f,exr) = 0) = 0;
 

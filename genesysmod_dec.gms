@@ -493,4 +493,10 @@ positive variable DiscountedNewExogenousTradeCapacityCosts(YEAR_FULL, FUEL, REGI
 
 free variable AnnualTotalExogenousTradeCosts(YEAR_FULL,REGION_FULL) Annual cost of trading fuels without trade capacity;
 free variable DiscountedAnnualTotalExogenousTradeCosts(YEAR_FULL,REGION_FULL) Discounted annual cost of trade with exogenous regions;
+
+* slack on the trade with the exogenous regions, only free with switch_exogenous_trade_debugging = 1
+positive variable ExogenousDemand_TooHigh(YEAR_FULL,TIMESLICE_FULL,FUEL,EXOGENOUS_REGION_FULL) Export of the supermodel run that the model does not deliver;
+positive variable ExogenousDemand_TooLow(YEAR_FULL,TIMESLICE_FULL,FUEL,EXOGENOUS_REGION_FULL) Export above the supermodel run;
+positive variable ExogenousProduction_TooHigh(YEAR_FULL,TIMESLICE_FULL,FUEL,EXOGENOUS_REGION_FULL) Import of the supermodel run that the model does not take;
+positive variable ExogenousProduction_TooLow(YEAR_FULL,TIMESLICE_FULL,FUEL,EXOGENOUS_REGION_FULL) Import above the supermodel run;
 $endIf

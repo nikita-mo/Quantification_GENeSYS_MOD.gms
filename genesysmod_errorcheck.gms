@@ -157,6 +157,20 @@ parameter error_ExogenousTradeCapacityMismatch(*,r_full,f,y_full,exr_full);
 error_ExogenousTradeCapacityMismatch('ExogenousTradeCapacity',r,f,y,exr)$(ResidualExogenousTradeCapacity(r,exr,f,y) and not ExogenousTradeRoute(r,exr,f))  = 1;
 error_ExogenousTradeCapacityMismatch('CommissionedExogenousTradeCapacity',r,f,y,exr)$(CommissionedExogenousTradeCapacity(r,exr,f,y) and not ExogenousTradeRoute(r,exr,f))  = 1;
 if(sum((r,f,y,exr),error_ExogenousTradeCapacityMismatch('ExogenousTradeCapacity',r,f,y,exr)+error_ExogenousTradeCapacityMismatch('CommissionedExogenousTradeCapacity',r,f,y,exr)),abort "ExogenousTradeRoute missing for trade connections with ResidualExogenousTradeCapacity. Check ExogenousTradeRoute & ResidualExogenousTradeCapacity data in Excel. Technologies with missing values are listed in parameter error_ExogenousTradeCapacityMismatch.");
+
+* Check that the exogenous trade is given for the time slices of this run and has a route
+parameter error_ExogenousTradeTimeslice(l_full);
+error_ExogenousTradeTimeslice(l_full)$(not TIMESLICE(l_full) and sum((y,f,exr), ExogenousDemand(y,l_full,f,exr) + ExogenousProduction(y,l_full,f,exr))) = 1;
+if(sum(l_full, error_ExogenousTradeTimeslice(l_full)),
+   display error_ExogenousTradeTimeslice;
+   abort "ExogenousDemand or ExogenousProduction is given for time slices that are not part of this run. The supermodel run and this run need the same time-slice reduction (elmod_nthhour, elmod_starthour).";
+);
+parameter error_ExogenousTradeWithoutRoute(f,exr_full);
+error_ExogenousTradeWithoutRoute(f,exr)$(sum((y,l), ExogenousDemand(y,l,f,exr) + ExogenousProduction(y,l,f,exr)) and not sum(r, ExogenousTradeRoute(r,exr,f))) = 1;
+if(sum((f,exr), error_ExogenousTradeWithoutRoute(f,exr)),
+   display error_ExogenousTradeWithoutRoute;
+   abort "ExogenousDemand or ExogenousProduction is given for a fuel and exogenous region without an ExogenousTradeRoute.";
+);
 $endIf
 
 * Check for negative values in physically nonnegative parameters

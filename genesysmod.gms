@@ -98,6 +98,10 @@ $if not set eployment_data_file          $setglobal employment_data_file Employm
 * ### settings for vertically integrated model run
 
 $if not set switch_vertical_integration  $setglobal switch_vertical_integration 0
+* trade with the exogenous regions: 0 = bounds (export at least, import at most the supermodel flow), 1 = equal to the supermodel flow
+$if not set switch_exogenous_trade_equality $setglobal switch_exogenous_trade_equality 0
+* 1 = penalised slack on the trade with the exogenous regions, to locate flows the model cannot meet (not for result runs)
+$if not set switch_exogenous_trade_debugging $setglobal switch_exogenous_trade_debugging 0
 
 ****** end of switches / settings *********
 *******************************************
