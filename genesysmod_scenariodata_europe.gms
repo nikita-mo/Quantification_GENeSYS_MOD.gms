@@ -19,3 +19,7 @@ ProductionByTechnologyAnnual.up(y,'HLI_Geothermal','Heat_Low_Industrial',r) = Sp
 
 ProductionByTechnologyAnnual.lo('2025','HB_Oil_Boiler','Heat_Buildings',r) = RegionalBaseYearProduction(r,'HB_Oil_Boiler','Heat_Buildings','2018')*0.3;
 CurtailmentCostFactor = 45;
+
+* finite bounds on the regional emission accounting variable, without them the barrier solver misses the emission limits
+AnnualEmissions.lo(y,e,r) = -5000;
+AnnualEmissions.up(y,e,r) = 5000;

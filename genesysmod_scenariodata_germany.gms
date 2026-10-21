@@ -138,5 +138,13 @@ NewCapacity.up('2025',t,DE_Region)$TagTechnologyToSubsets(t,'PowerSupply') = +IN
 NewCapacity.up('2025',t,DE_Region)$(TagTechnologyToSubsets(t,'PowerSupply') and not AnnualMinNewCapacity(DE_Region,t,'2025') and not TotalAnnualMinCapacity(DE_Region,t,'2025')
                                     and not sum((tg,rg)$(TagTechnologyToSubsets(t,tg) and TagRegionToSubsets(DE_Region,rg)), GroupTotalAnnualMinCapacity(tg,rg,'2025'))) = 0;
 
+*##### Finite bounds on the emission accounting variables, without them the barrier solver misses the emission limits #####
+AnnualEmissions.lo(y,e,DE_Region) = -5000;
+AnnualEmissions.up(y,e,DE_Region) = 5000;
+AnnualTechnologyEmission.lo(y,t,e,DE_Region) = -1000;
+AnnualTechnologyEmission.up(y,t,e,DE_Region) = 1000;
+AnnualTechnologyEmissionByMode.lo(y,t,e,m,DE_Region) = -1000;
+AnnualTechnologyEmissionByMode.up(y,t,e,m,DE_Region) = 1000;
+
 *##### Go RES without the policy block, German model: German part of the European 1.5 degree carbon budget 2018-2060 (assumption based on the European Go RES run) #####
 $if %emissionPathway%%switch_de_policy% == Green0 ModelPeriodEmissionLimit('CO2')$DE_national = 6715;
