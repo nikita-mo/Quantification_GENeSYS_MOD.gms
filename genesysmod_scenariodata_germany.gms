@@ -167,4 +167,4 @@ AnnualTechnologyEmissionByMode.lo(y,t,e,m,DE_Region) = -1000;
 AnnualTechnologyEmissionByMode.up(y,t,e,m,DE_Region) = 1000;
 
 *##### Go RES without the policy block, German model: German part of the European 1.5 degree carbon budget 2018-2060 (assumption based on the European Go RES run) #####
-$if %emissionPathway%%switch_de_policy% == Green0 ModelPeriodEmissionLimit('CO2')$DE_national = 6715;
+$if %emissionPathway%%switch_de_policy% == Green0 ModelPeriodEmissionLimit('CO2')$DE_national = 6944;
