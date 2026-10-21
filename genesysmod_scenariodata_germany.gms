@@ -134,6 +134,7 @@ ProductionByTechnologyAnnual.up(y,'HD_Heatpump_ExcessHeat','Heat_District',DE_Re
 ProductionByTechnologyAnnual.up(y,'HLI_Geothermal','Heat_Low_Industrial',DE_Region) = SpecifiedAnnualDemand(DE_Region,'Heat_Low_Industrial',y)*0.25;
 ProductionByTechnologyAnnual.up(y,'CHP_WasteToEnergy','Heat_District',DE_Region) = RegionalBaseYearProduction(DE_Region,'CHP_WasteToEnergy','Heat_District','2018');
 ProductionByTechnologyAnnual.lo('2025','HB_Oil_Boiler','Heat_Buildings',DE_Region) = RegionalBaseYearProduction(DE_Region,'HB_Oil_Boiler','Heat_Buildings','2018')*0.3;
+CurtailmentCostFactor = 0.1;
 NewCapacity.up('2025',t,DE_Region)$TagTechnologyToSubsets(t,'PowerSupply') = +INF;
 NewCapacity.up('2025',t,DE_Region)$(TagTechnologyToSubsets(t,'PowerSupply') and not AnnualMinNewCapacity(DE_Region,t,'2025') and not TotalAnnualMinCapacity(DE_Region,t,'2025')
                                     and not sum((tg,rg)$(TagTechnologyToSubsets(t,tg) and TagRegionToSubsets(DE_Region,rg)), GroupTotalAnnualMinCapacity(tg,rg,'2025'))) = 0;

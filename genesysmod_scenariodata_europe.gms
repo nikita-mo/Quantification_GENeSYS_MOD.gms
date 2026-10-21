@@ -18,7 +18,7 @@ ProductionByTechnologyAnnual.up(y,'HD_Heatpump_ExcessHeat','Heat_District',r)$(Y
 ProductionByTechnologyAnnual.up(y,'HLI_Geothermal','Heat_Low_Industrial',r) = SpecifiedAnnualDemand(r,'Heat_Low_Industrial',y)*0.25;
 
 ProductionByTechnologyAnnual.lo('2025','HB_Oil_Boiler','Heat_Buildings',r) = RegionalBaseYearProduction(r,'HB_Oil_Boiler','Heat_Buildings','2018')*0.3;
-CurtailmentCostFactor = 45;
+CurtailmentCostFactor = 0.1;
 
 * finite bounds on the regional emission accounting variable, without them the barrier solver misses the emission limits
 AnnualEmissions.lo(y,e,r) = -5000;
