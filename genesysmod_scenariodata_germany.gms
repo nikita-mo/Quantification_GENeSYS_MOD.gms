@@ -119,6 +119,15 @@ DE_WPG_DistrictHeatRenewableShare(y)$(WPG_DH_Share(y))..
 RateOfActivity.fx(y,l,t,m,DE_Region)$(TagTechnologyToSector(t,'Buildings') and not TagTechnologyToSubsets(t,'CHP') and YearVal(y) >= 2045
                                       and (InputActivityRatio(DE_Region,t,'Gas_Natural',m,y) or InputActivityRatio(DE_Region,t,'Oil',m,y) or InputActivityRatio(DE_Region,t,'Hardcoal',m,y) or InputActivityRatio(DE_Region,t,'Lignite',m,y))) = 0;
 
+*##### No fossil fuels in power and CHP plants from 2045 (assumption based on EEG and Klimaschutzgesetz) #####
+RateOfActivity.fx(y,l,t,m,DE_Region)$(YearVal(y) >= 2045 and OutputActivityRatio(DE_Region,t,'Power',m,y)
+                                      and (InputActivityRatio(DE_Region,t,'Gas_Natural',m,y) or InputActivityRatio(DE_Region,t,'Oil',m,y) or InputActivityRatio(DE_Region,t,'Hardcoal',m,y) or InputActivityRatio(DE_Region,t,'Lignite',m,y))) = 0;
+
+*##### Output of technologies that use hard coal does not grow after 2045 on the national sum (assumption based on Klimaschutzgesetz) #####
+equation DE_HardcoalNoGrowth(YEAR_FULL,TECHNOLOGY);
+DE_HardcoalNoGrowth(y,t)$(YearVal(y) > 2045 and sum((DE_Region,m), InputActivityRatio(DE_Region,t,'Hardcoal',m,y)))..
+  sum((f,DE_Region), ProductionByTechnologyAnnual(y,t,f,DE_Region)) =l= sum((f,DE_Region), ProductionByTechnologyAnnual(y-1,t,f,DE_Region));
+
 *##### Growth limit of renewable building heat 3.3 % a year (assumption based on Gebaeudeenergiegesetz par. 72 (4)); the limit has no region, it holds for every region of the model #####
 ProductionGrowthLimit('Heat_Buildings',y)$(YearVal(y) > 2025 and ProductionGrowthLimit('Heat_Buildings',y) < 0.033) = 0.033;
 
